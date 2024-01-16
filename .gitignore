@@ -10,3 +10,4 @@ build/
 /debian/debhelper-build-stamp
 /debian/php-mhujer-fio-api.substvars
 /debian/.debhelper/
+/debian/files
