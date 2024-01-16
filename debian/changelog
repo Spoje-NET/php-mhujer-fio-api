@@ -1,0 +1,10 @@
+php-mhujer-fio-api (4.0.1) UNRELEASED; urgency=low
+
+  [ Vítězslav Dvořák ]
+  * Initial release. Closes: #nnnn
+    <nnnn is the bug number of your ITP>
+
+  [ vitex ]
+  * Debian Repack
+
+ -- vitex <info@vitexsoftware.cz>  Tue, 16 Jan 2024 19:53:08 +0100

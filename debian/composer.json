@@ -1,0 +1,37 @@
+{
+  "name": "deb/fioapi",
+  "type": "library",
+  "description": "Fio API PHP implemention",
+  "keywords": [
+    "fio",
+    "banking",
+    "api"
+  ],
+  "homepage": "https://github.com/mhujer/fio-api-php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Martin Hujer",
+      "email": "mhujer@gmail.com",
+      "homepage": "https://www.martinhujer.cz/",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "ext-curl": "*",
+    "guzzlehttp/guzzle": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "FioApi\\": "./",
+      "FioApi\\Exceptions\\": "./Exceptions"
+    }
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "/usr/share/php/GuzzleHttp"
+    }
+  ],
+  "version": "4.0.1"
+}

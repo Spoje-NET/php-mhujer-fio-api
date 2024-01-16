@@ -4,3 +4,9 @@ phpunit.xml
 composer.lock
 build/
 /.phpunit.result.cache
+/nbproject/private/
+/nbproject/
+/debian/php-mhujer-fio-api/
+/debian/debhelper-build-stamp
+/debian/php-mhujer-fio-api.substvars
+/debian/.debhelper/
