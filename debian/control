@@ -1,0 +1,18 @@
+Source: php-mhujer-fio-api
+Section: unknown
+Priority: optional
+Maintainer: Vítězslav Dvořák <info@vitexsoftware.cz>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.5.1
+Homepage: https://github.com/mhujer/fio-api-php
+Rules-Requires-Root: no
+Vcs-Git: https://github.com/Spoje-NET/php-mhujer-fio-api
+Vcs-Browser: https://github.com/Spoje-NET/php-mhujer-fio-api
+
+Package: php-mhujer-fio-api
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}, php-curl, php-guzzlehttp-guzzle
+Description: Fio API PHP implemention
+ Fio bank REST API implementation in PHP. It allows you to download and iterate 
+ through account balance changes.
