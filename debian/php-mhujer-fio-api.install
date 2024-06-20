@@ -1,4 +1,3 @@
 src/FioApi/*.php					/usr/share/php/FioApi/
 src/FioApi/Exceptions/*.php				/usr/share/php/FioApi/Exceptions/
-src/FioApi/keys/Geotrust_PCA_G3_Root.pem		/usr/share/ca-certificates/
 debian/composer.json					/usr/share/php/FioApi/

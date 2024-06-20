@@ -19,7 +19,8 @@
   ],
   "require": {
     "ext-curl": "*",
-    "guzzlehttp/guzzle": "*"
+    "guzzlehttp/guzzle": "*",
+    "composer/ca-bundle": "^1.5"        
   },
   "autoload": {
     "psr-4": {
