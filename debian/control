@@ -12,7 +12,7 @@ Vcs-Browser: https://github.com/Spoje-NET/php-mhujer-fio-api
 Package: php-mhujer-fio-api
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}, php-curl, php-guzzlehttp-guzzle, composer-debian
+Depends: ${misc:Depends}, ${shlibs:Depends}, php-curl, php-guzzlehttp-guzzle, composer-debian, ca-certificates
 Description: Fio API PHP implemention
  Fio bank REST API implementation in PHP. It allows you to download and iterate 
  through account balance changes.
