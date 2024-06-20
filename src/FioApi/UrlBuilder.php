@@ -8,7 +8,7 @@ use FioApi\Exceptions\MissingTokenException;
 
 class UrlBuilder
 {
-    const BASE_URL = 'https://www.fio.cz/ib_api/rest/';
+    const BASE_URL = 'https://fioapi.fio.cz/v1/rest/';
 
     /** @var string */
     protected $token;
@@ -23,9 +23,9 @@ class UrlBuilder
         return $this->token;
     }
 
-    public function setToken(string $token)
+    public function setToken(string $token): void
     {
-        if (!$token) {
+        if ($token === '') {
             throw new MissingTokenException(
                 'Token is required for ebanking API calls. You can get one at https://www.fio.cz/.'
             );

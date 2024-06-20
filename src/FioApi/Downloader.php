@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace FioApi;
 
+use Composer\CaBundle\CaBundle;
 use FioApi\Exceptions\InternalErrorException;
 use FioApi\Exceptions\TooGreedyException;
+use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 
 class Downloader
@@ -14,45 +19,21 @@ class Downloader
     /** @var UrlBuilder */
     protected $urlBuilder;
 
-    /** @var \GuzzleHttp\Client */
+    /** @var ?ClientInterface */
     protected $client;
 
-    /** @var string */
-    protected $certificatePath;
-
-    public function __construct(
-        string $token,
-        \GuzzleHttp\ClientInterface $client = null
-    ) {
+    public function __construct(string $token, ClientInterface $client = null)
+    {
         $this->urlBuilder = new UrlBuilder($token);
         $this->client = $client;
     }
 
-    public function setCertificatePath(string $path)
-    {
-        $this->certificatePath = $path;
-    }
-
-    public function getCertificatePath(): string
-    {
-        if ($this->certificatePath) {
-            return $this->certificatePath;
-        }
-
-        if (class_exists('\Composer\CaBundle\CaBundle')) {
-            return \Composer\CaBundle\CaBundle::getSystemCaRootBundlePath();
-        } elseif (class_exists('\Kdyby\CurlCaBundle\CertificateHelper')) {
-            return \Kdyby\CurlCaBundle\CertificateHelper::getCaInfoFile();
-        }
-
-        //Key downloaded from https://www.geotrust.com/resources/root-certificates/
-        return __DIR__ . '/keys/Geotrust_PCA_G3_Root.pem';
-    }
-
     public function getClient(): ClientInterface
     {
-        if (!$this->client) {
-            $this->client = new \GuzzleHttp\Client();
+        if ($this->client === null) {
+            $this->client = new Client([
+                RequestOptions::VERIFY => CaBundle::getSystemCaRootBundlePath()
+            ]);
         }
         return $this->client;
     }
@@ -80,8 +61,8 @@ class Downloader
         $url = $this->urlBuilder->buildSetLastIdUrl($id);
 
         try {
-            $client->request('get', $url, ['verify' => $this->getCertificatePath()]);
-        } catch (\GuzzleHttp\Exception\BadResponseException $e) {
+            $client->request('get', $url);
+        } catch (BadResponseException $e) {
             $this->handleException($e);
         }
     }
@@ -89,18 +70,20 @@ class Downloader
     private function downloadTransactionsList(string $url): TransactionList
     {
         $client = $this->getClient();
+        $transactions = null;
 
         try {
-            /** @var ResponseInterface $response */
-            $response = $client->request('get', $url, ['verify' => $this->getCertificatePath()]);
-        } catch (\GuzzleHttp\Exception\BadResponseException $e) {
+            $response = $client->request('get', $url);
+            $jsonData = json_decode($response->getBody()->getContents(), null, 512, JSON_THROW_ON_ERROR);
+            $transactions = $jsonData->accountStatement;
+        } catch (BadResponseException $e) {
             $this->handleException($e);
         }
 
-        return TransactionList::create(json_decode($response->getBody()->getContents())->accountStatement);
+        return TransactionList::create($transactions);
     }
 
-    private function handleException(\GuzzleHttp\Exception\BadResponseException $e): void
+    private function handleException(BadResponseException $e): void
     {
         if ($e->getCode() == 409) {
             throw new TooGreedyException('You can use one token for API call every 30 seconds', $e->getCode(), $e);

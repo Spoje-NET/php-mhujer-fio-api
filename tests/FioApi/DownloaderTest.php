@@ -8,10 +8,11 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\Assert;
 
 class DownloaderTest extends \PHPUnit\Framework\TestCase
 {
-    public function testNotRespectingTheTimeoutResultsInTooGreedyException()
+    public function testNotRespectingTheTimeoutResultsInTooGreedyException(): void
     {
         $handler = HandlerStack::create(new MockHandler([
             new Response(409),
@@ -23,7 +24,7 @@ class DownloaderTest extends \PHPUnit\Framework\TestCase
         $downloader->downloadSince(new \DateTimeImmutable('-1 week'));
     }
 
-    public function testInvalidTokenResultsInInternalErrorException()
+    public function testInvalidTokenResultsInInternalErrorException(): void
     {
         $handler = HandlerStack::create(new MockHandler([
             new Response(500),
@@ -35,7 +36,7 @@ class DownloaderTest extends \PHPUnit\Framework\TestCase
         $downloader->downloadSince(new \DateTimeImmutable('-1 week'));
     }
 
-    public function testUnknownResponseCodePassesOriginalException()
+    public function testUnknownResponseCodePassesOriginalException(): void
     {
         $handler = HandlerStack::create(new MockHandler([
             new Response(418),
@@ -48,31 +49,31 @@ class DownloaderTest extends \PHPUnit\Framework\TestCase
         $downloader->downloadSince(new \DateTimeImmutable('-1 week'));
     }
 
-    public function testDownloaderDownloadsData()
+    public function testDownloaderDownloadsData(): void
     {
         $handler = HandlerStack::create(new MockHandler([
-            new Response(200, [], file_get_contents(__DIR__ . '/data/example-response.json')),
+            new Response(200, [], (string) file_get_contents(__DIR__ . '/data/example-response.json')),
         ]));
         $downloader = new Downloader('validToken', new Client(['handler' => $handler]));
 
         $transactionList = $downloader->downloadSince(new \DateTimeImmutable('-1 week'));
 
-        $this->assertInstanceOf(TransactionList::class, $transactionList);
+        Assert::assertCount(3, $transactionList->getTransactions());
     }
 
-    public function testDownloaderDownloadsLast()
+    public function testDownloaderDownloadsLast(): void
     {
         $handler = HandlerStack::create(new MockHandler([
-            new Response(200, [], file_get_contents(__DIR__ . '/data/example-response.json')),
+            new Response(200, [], (string) file_get_contents(__DIR__ . '/data/example-response.json')),
         ]));
         $downloader = new Downloader('validToken', new Client(['handler' => $handler]));
 
         $transactionList = $downloader->downloadLast();
 
-        $this->assertInstanceOf(TransactionList::class, $transactionList);
+        Assert::assertCount(3, $transactionList->getTransactions());
     }
 
-    public function testDownloaderSetsLastId()
+    public function testDownloaderSetsLastId(): void
     {
         $container = [];
         $history = Middleware::history($container);
@@ -85,18 +86,11 @@ class DownloaderTest extends \PHPUnit\Framework\TestCase
 
         $downloader->setLastId('123456');
 
-        $this->assertCount(1, $container);
+        Assert::assertCount(1, $container);
 
         /** @var \GuzzleHttp\Psr7\Request $request */
         $request = $container[0]['request'];
 
-        $this->assertSame('https://www.fio.cz/ib_api/rest/set-last-id/validToken/123456/', (string) $request->getUri());
-    }
-
-    public function testDownloaderSetCertificatePath()
-    {
-        $downloader = new Downloader('validToken');
-        $downloader->setCertificatePath('foo.pem');
-        $this->assertSame('foo.pem', $downloader->getCertificatePath());
+        Assert::assertSame('https://fioapi.fio.cz/v1/rest/set-last-id/validToken/123456/', (string) $request->getUri());
     }
 }
