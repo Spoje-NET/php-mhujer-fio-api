@@ -1,3 +1,2 @@
 src/FioApi/*.php					/usr/share/php/FioApi/
 src/FioApi/Exceptions/*.php				/usr/share/php/FioApi/Exceptions/
-debian/composer.json					/usr/share/php/FioApi/

@@ -1,14 +1,17 @@
 #!/usr/bin/make -f
-# You must remove unused comment lines for the released package.
-#export DH_VERBOSE = 1
-#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+PKG_VERSION := $(shell dpkg-parsechangelog -S Version | sed 's/~.*//')
+PKG_SOURCE  := $(shell jq -r '.name' composer.json)
 
 %:
 	dh $@
 
 override_dh_install:
 	dh_install
-	jq '.version = "'`dpkg-parsechangelog | sed -n 's/^Version: //p'| sed 's/~.*//'`'"'  debian/composer.json |sponge debian/php-mhujer-fio-api/usr/share/php/FioApi/composer.json
-	sed -i 's/certificatePath;/certificatePath="\/usr\/share\/ca-certificates\/Geotrust_PCA_G3_Root.pem";/'  debian/php-mhujer-fio-api/usr/share/php/FioApi/Downloader.php
+	install -m 644 debian/autoload.php \
+	    debian/php-mhujer-fio-api/usr/share/php/FioApi/autoload.php
+	sed -i 's/certificatePath;/certificatePath="\/usr\/share\/ca-certificates\/Geotrust_PCA_G3_Root.pem";/' \
+	    debian/php-mhujer-fio-api/usr/share/php/FioApi/Downloader.php
+	sed -i "s|'unknown'|'$(PKG_SOURCE)'|" \
+	    debian/php-mhujer-fio-api/usr/share/php/FioApi/autoload.php
+	sed -i "s|'0.0.0'|'$(PKG_VERSION)'|" \
+	    debian/php-mhujer-fio-api/usr/share/php/FioApi/autoload.php
