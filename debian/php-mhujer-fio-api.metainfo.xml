@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="generic">
+  <id>io.github.Spoje-NET.php-mhujer-fio-api</id>
+  <name>Fio API PHP</name>
+  <summary>Fio bank REST API implementation in PHP</summary>
+  <description>
+    <p>PHP library that allows you to download and iterate through account balance changes from the Fio bank REST API.</p>
+  </description>
+  <icon type="stock">php-mhujer-fio-api</icon>
+  <url type="homepage">https://github.com/mhujer/fio-api-php</url>
+  <url type="vcs-browser">https://github.com/Spoje-NET/php-mhujer-fio-api</url>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="cz.vitexsoftware">
+    <name>Vítězslav Dvořák</name>
+  </developer>
+  <releases>
+    <release version="5.0.1" date="2024-06-20"/>
+  </releases>
+</component>
