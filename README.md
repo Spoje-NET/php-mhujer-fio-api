@@ -31,6 +31,53 @@ foreach ($transactionList->getTransactions() as $transaction) {
 - `downloadLast(): TransactionList`
 - `setLastId(string $id)` - sets the last downloaded ID through the API
 
+Rate Limiting
+----
+Fio API enforces a 30-second cooldown between requests using the same token. If you make a request sooner, the API returns HTTP 409.
+
+This library includes a built-in rate limiter that coordinates requests across multiple processes using a shared JSON file with file locking.
+
+#### Wait mode (default) — sleeps until the token is ready:
+
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+$store = new FioApi\RateLimit\JsonRateLimitStore('/tmp/fio-rate-limit.json');
+$limiter = new FioApi\RateLimit\RateLimiter($store, true);
+
+$downloader = new FioApi\Downloader('TOKEN@todo', null, $limiter);
+$transactionList = $downloader->downloadSince(new \DateTimeImmutable('-1 week'));
+```
+
+In wait mode, if less than 30 seconds have passed since the last request for the same token, the limiter will `sleep()` for the remaining time before proceeding.
+
+#### Throw mode — throws exception immediately:
+
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+$store = new FioApi\RateLimit\JsonRateLimitStore('/tmp/fio-rate-limit.json');
+$limiter = new FioApi\RateLimit\RateLimiter($store, false);
+
+$downloader = new FioApi\Downloader('TOKEN@todo', null, $limiter);
+
+try {
+    $transactionList = $downloader->downloadSince(new \DateTimeImmutable('-1 week'));
+} catch (FioApi\Exceptions\TooGreedyException $e) {
+    // Handle: request came too soon, try again later
+}
+```
+
+#### Multi-process safety
+
+The `JsonRateLimitStore` uses `flock()` for file-level locking, so multiple cron jobs or workers sharing the same store file will safely stagger their API calls without colliding.
+
+#### Custom store backend
+
+You can implement `FioApi\RateLimit\RateLimitStoreInterface` to use a database or other shared storage (e.g. Redis, SQLite) instead of a JSON file.
+
 Requirements
 ------------
 Fio API PHP works with PHP 7.4 or higher.

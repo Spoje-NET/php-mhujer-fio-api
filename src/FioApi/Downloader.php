@@ -7,6 +7,7 @@ namespace FioApi;
 use Composer\CaBundle\CaBundle;
 use FioApi\Exceptions\InternalErrorException;
 use FioApi\Exceptions\TooGreedyException;
+use FioApi\RateLimit\RateLimiter;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\BadResponseException;
@@ -22,10 +23,14 @@ class Downloader
     /** @var ?ClientInterface */
     protected $client;
 
-    public function __construct(string $token, ClientInterface $client = null)
+    /** @var ?RateLimiter */
+    protected $rateLimiter;
+
+    public function __construct(string $token, ClientInterface $client = null, RateLimiter $rateLimiter = null)
     {
         $this->urlBuilder = new UrlBuilder($token);
         $this->client = $client;
+        $this->rateLimiter = $rateLimiter;
     }
 
     public function getClient(): ClientInterface
@@ -60,8 +65,11 @@ class Downloader
         $client = $this->getClient();
         $url = $this->urlBuilder->buildSetLastIdUrl($id);
 
+        $this->rateLimitCheck();
+
         try {
             $client->request('get', $url);
+            $this->rateLimitRecord();
         } catch (BadResponseException $e) {
             $this->handleException($e);
         }
@@ -72,8 +80,11 @@ class Downloader
         $client = $this->getClient();
         $transactions = null;
 
+        $this->rateLimitCheck();
+
         try {
             $response = $client->request('get', $url);
+            $this->rateLimitRecord();
             $jsonData = json_decode($response->getBody()->getContents(), null, 512, JSON_THROW_ON_ERROR);
             $transactions = $jsonData->accountStatement;
         } catch (BadResponseException $e) {
@@ -81,6 +92,20 @@ class Downloader
         }
 
         return TransactionList::create($transactions);
+    }
+
+    private function rateLimitCheck(): void
+    {
+        if ($this->rateLimiter !== null) {
+            $this->rateLimiter->checkBeforeRequest($this->urlBuilder->getToken());
+        }
+    }
+
+    private function rateLimitRecord(): void
+    {
+        if ($this->rateLimiter !== null) {
+            $this->rateLimiter->recordRequest($this->urlBuilder->getToken());
+        }
     }
 
     private function handleException(BadResponseException $e): void
