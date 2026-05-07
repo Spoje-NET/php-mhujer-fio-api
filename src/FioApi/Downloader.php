@@ -26,7 +26,7 @@ class Downloader
     /** @var ?RateLimiter */
     protected $rateLimiter;
 
-    public function __construct(string $token, ClientInterface $client = null, RateLimiter $rateLimiter = null)
+    public function __construct(string $token, ?ClientInterface $client = null, ?RateLimiter $rateLimiter = null)
     {
         $this->urlBuilder = new UrlBuilder($token);
         $this->client = $client;
