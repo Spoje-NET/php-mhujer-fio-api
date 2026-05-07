@@ -78,9 +78,17 @@ The `JsonRateLimitStore` uses `flock()` for file-level locking, so multiple cron
 
 You can implement `FioApi\RateLimit\RateLimitStoreInterface` to use a database or other shared storage (e.g. Redis, SQLite) instead of a JSON file.
 
+Testing
+-------
+The library includes unit tests for all rate limiting components:
+
+```shell
+composer test
+```
+
 Requirements
 ------------
-Fio API PHP works with PHP 7.4 or higher.
+Fio API PHP works with PHP 7.4 or higher (including PHP 8.4).
 
 Submitting bugs and feature requests
 ------------------------------------
