@@ -1,5 +1,6 @@
 src/FioApi/*.php					/usr/share/php/FioApi/
 composer.json						/usr/share/php/FioApi/
 src/FioApi/Exceptions/*.php				/usr/share/php/FioApi/Exceptions/
+src/FioApi/RateLimit/*.php				/usr/share/php/FioApi/RateLimit/
 debian/php-mhujer-fio-api.metainfo.xml			/usr/share/metainfo/
 debian/php-mhujer-fio-api.svg				/usr/share/icons/hicolor/scalable/apps/
