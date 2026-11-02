@@ -25,6 +25,39 @@ class RateLimiter
     }
 
     /**
+     * Waits for (or, without wait mode, fails on) the rate limit window and
+     * reserves the slot in one atomic step, so concurrent processes sharing
+     * the store never send a request within the same window.
+     *
+     * Stores that are not atomic fall back to check followed by record.
+     *
+     * @throws TooGreedyException if the rate limit is exceeded and wait mode is disabled
+     */
+    public function acquire(string $tokenId): void
+    {
+        if (!$this->store instanceof AtomicRateLimitStoreInterface) {
+            $this->checkBeforeRequest($tokenId);
+            $this->recordRequest($tokenId);
+
+            return;
+        }
+
+        while (($wait = $this->store->tryAcquire($tokenId, 'request', (float) self::WINDOW_SECONDS)) > 0.0) {
+            if (!$this->waitMode) {
+                throw new TooGreedyException(
+                    sprintf(
+                        'You can use one token for API call every %d seconds. Wait %d more seconds.',
+                        self::WINDOW_SECONDS,
+                        (int) ceil($wait)
+                    )
+                );
+            }
+
+            usleep((int) ceil($wait * 1000000));
+        }
+    }
+
+    /**
      * Ensures the token is allowed to make the next request by enforcing the 30-second rate limit.
      *
      * If the window hasn't elapsed and wait mode is enabled, sleeps for the remaining time;

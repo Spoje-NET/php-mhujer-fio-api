@@ -97,15 +97,13 @@ class Downloader
     private function rateLimitCheck(): void
     {
         if ($this->rateLimiter !== null) {
-            $this->rateLimiter->checkBeforeRequest($this->urlBuilder->getToken());
+            $this->rateLimiter->acquire($this->urlBuilder->getToken());
         }
     }
 
     private function rateLimitRecord(): void
     {
-        if ($this->rateLimiter !== null) {
-            $this->rateLimiter->recordRequest($this->urlBuilder->getToken());
-        }
+        // The slot is already reserved by rateLimitCheck() (acquire()).
     }
 
     private function handleException(BadResponseException $e): void

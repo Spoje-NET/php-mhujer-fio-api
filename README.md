@@ -74,11 +74,11 @@ try {
 
 #### Multi-process safety
 
-The `JsonRateLimitStore` uses `flock()` for file-level locking, so multiple cron jobs or workers sharing the same store file will safely stagger their API calls without colliding.
+`RateLimiter::acquire()` (used by `Downloader`) checks the 30 second window and reserves the slot in one step under an exclusive `flock()` on the store file. Concurrent cron jobs or workers sharing the same store file therefore never send a request for the same token within one window: in wait mode they queue up, otherwise `TooGreedyException` is thrown. Failing to open, lock or write the store file throws a `RuntimeException` instead of silently disabling the limit.
 
 #### Custom store backend
 
-You can implement `FioApi\RateLimit\RateLimitStoreInterface` to use a database or other shared storage (e.g. Redis, SQLite) instead of a JSON file.
+Implement `FioApi\RateLimit\AtomicRateLimitStoreInterface` (`tryAcquire()` must check and reserve atomically) to use a database or other shared storage (e.g. Redis, SQLite) instead of a JSON file. Stores implementing only `FioApi\RateLimit\RateLimitStoreInterface` still work, but fall back to a non-atomic check followed by record.
 
 Testing
 -------
@@ -90,7 +90,7 @@ composer test
 
 Requirements
 ------------
-Fio API PHP works with PHP 7.4 or higher (including PHP 8.4).
+Fio API PHP works with PHP 8.1 or higher (including PHP 8.4).
 
 Submitting bugs and feature requests
 ------------------------------------
